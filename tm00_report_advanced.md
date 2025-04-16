@@ -14,16 +14,21 @@
 
 Name|From|To |Data|Protocol|Port
 |:----:|:----:|:---:|:----:|:--------:|:----:|
-|(1) Send login credential|User|IIS8.5 - ASP.NET Web Forms App|[]|HTTP|80|
+|(1) Send login credential|User|IIS8.5 - ASP.NET Web Forms App|User ID & Password|HTTP|80|
 |(2) Query user identity|IIS8.5 - ASP.NET Web Forms App|MSSQL11 - IntranetWebDB|[]|TCP|1433|
-|(3) Send user identity|MSSQL11 - IntranetWebDB|IIS8.5 - ASP.NET Web Forms App|[]|HTTP|80|
-|(4) Keep session in memory|IIS8.5 - ASP.NET Web Forms App|IIS8.5 - ASP.NET Web Forms App|[]|HTTP|80|
+|(3) Send user identity|MSSQL11 - IntranetWebDB|IIS8.5 - ASP.NET Web Forms App|User Identity|HTTP|80|
+|(4) Keep session in memory|IIS8.5 - ASP.NET Web Forms App|IIS8.5 - ASP.NET Web Forms App|Session ID|HTTP|80|
+|(5) Send Session ID|IIS8.5 - ASP.NET Web Forms App|User|Session ID||-1|
 
 
 ## Data Dictionary
 
 Name|Description|Classification|Carried|Processed
 |:----:|:--------:|:----:|:----|:----|
+|User ID & Password||SECRET|Send login credential<br>|IIS8.5 - ASP.NET Web Forms App<br>User<br>|
+|User Identity||SECRET|Send user identity<br>|IIS8.5 - ASP.NET Web Forms App<br>MSSQL11 - IntranetWebDB<br>|
+|Session ID||SECRET|Keep session in memory<br>Send Session ID<br>|IIS8.5 - ASP.NET Web Forms App<br>User<br>|
+|User PII|User PII data|TOP_SECRET||MSSQL11 - IntranetWebDB<br>IIS8.5 - ASP.NET Web Forms App<br>|
 
 
 ## Actors
@@ -852,7 +857,7 @@ Sink|Server(IIS8.5 - ASP.NET Web Forms App)|
 Source|Actor(User)|
 Is Response|False|
 In Scope|True|
-Finding Count|5|
+Finding Count|7|
 
 
 
@@ -934,6 +939,36 @@ Finding Count|5|
   &emsp;
 </details>
 
+<details>
+  <summary>   55  --  DS06   --   Data Leak</summary>
+  <h6> Targeted Element </h6>
+  <p> Send login credential </p>
+  <h6> Severity </h6>
+  <p>Very High</p>
+  <h6>Example Instances</h6>
+  <p>An application, which connects to a database without TLS, performs a database query in which it compares the password to a stored hash, instead of fetching the hash and comparing it locally.</p>
+  <h6>Mitigations</h6>
+  <p>All data should be encrypted in transit. All PII and restricted data must be encrypted at rest. If a service is storing credentials used to authenticate users or incoming connections, it must only store hashes of them created using cryptographic functions, so it is only possible to compare them against user input, without fully decoding them. If a client is storing credentials in either files or other data store, access to them must be as restrictive as possible, including using proper file permissions, database users with restricted access or separate storage.</p>
+  <h6>References</h6>
+  <p>https://cwe.mitre.org/data/definitions/311.html, https://cwe.mitre.org/data/definitions/312.html, https://cwe.mitre.org/data/definitions/916.html, https://cwe.mitre.org/data/definitions/653.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   56  --  DR01   --   Unprotected Sensitive Data</summary>
+  <h6> Targeted Element </h6>
+  <p> Send login credential </p>
+  <h6> Severity </h6>
+  <p>High</p>
+  <h6>Example Instances</h6>
+  <p></p>
+  <h6>Mitigations</h6>
+  <p>All data should be encrypted in transit. All PII and restricted data must be encrypted at rest. If a service is storing credentials used to authenticate users or incoming connections, it must only store hashes of them created using cryptographic functions, so it is only possible to compare them against user input, without fully decoding them. If a client is storing credentials in either files or other data store, access to them must be as restrictive as possible, including using proper file permissions, database users with restricted access or separate storage.</p>
+  <h6>References</h6>
+  <p>https://cwe.mitre.org/data/definitions/311.html, https://cwe.mitre.org/data/definitions/312.html, https://cwe.mitre.org/data/definitions/916.html, https://cwe.mitre.org/data/definitions/653.html</p>
+  &emsp;
+</details>
+
 
 
 Name|Query user identity
@@ -951,7 +986,7 @@ Finding Count|5|
 
 
 <details>
-  <summary>   55  --  DE01   --   Interception</summary>
+  <summary>   57  --  DE01   --   Interception</summary>
   <h6> Targeted Element </h6>
   <p> Query user identity </p>
   <h6> Severity </h6>
@@ -966,7 +1001,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   56  --  AC05   --   Content Spoofing</summary>
+  <summary>   58  --  AC05   --   Content Spoofing</summary>
   <h6> Targeted Element </h6>
   <p> Query user identity </p>
   <h6> Severity </h6>
@@ -981,7 +1016,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   57  --  DE03   --   Sniffing Attacks</summary>
+  <summary>   59  --  DE03   --   Sniffing Attacks</summary>
   <h6> Targeted Element </h6>
   <p> Query user identity </p>
   <h6> Severity </h6>
@@ -996,7 +1031,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   58  --  CR06   --   Communication Channel Manipulation</summary>
+  <summary>   60  --  CR06   --   Communication Channel Manipulation</summary>
   <h6> Targeted Element </h6>
   <p> Query user identity </p>
   <h6> Severity </h6>
@@ -1011,7 +1046,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   59  --  CR08   --   Client-Server Protocol Manipulation</summary>
+  <summary>   61  --  CR08   --   Client-Server Protocol Manipulation</summary>
   <h6> Targeted Element </h6>
   <p> Query user identity </p>
   <h6> Severity </h6>
@@ -1034,7 +1069,7 @@ Sink|Server(IIS8.5 - ASP.NET Web Forms App)|
 Source|Datastore(MSSQL11 - IntranetWebDB)|
 Is Response|False|
 In Scope|True|
-Finding Count|5|
+Finding Count|7|
 
 
 
@@ -1042,7 +1077,7 @@ Finding Count|5|
 
 
 <details>
-  <summary>   60  --  DE01   --   Interception</summary>
+  <summary>   62  --  DE01   --   Interception</summary>
   <h6> Targeted Element </h6>
   <p> Send user identity </p>
   <h6> Severity </h6>
@@ -1057,7 +1092,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   61  --  AC05   --   Content Spoofing</summary>
+  <summary>   63  --  AC05   --   Content Spoofing</summary>
   <h6> Targeted Element </h6>
   <p> Send user identity </p>
   <h6> Severity </h6>
@@ -1072,7 +1107,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   62  --  DE03   --   Sniffing Attacks</summary>
+  <summary>   64  --  DE03   --   Sniffing Attacks</summary>
   <h6> Targeted Element </h6>
   <p> Send user identity </p>
   <h6> Severity </h6>
@@ -1087,7 +1122,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   63  --  CR06   --   Communication Channel Manipulation</summary>
+  <summary>   65  --  CR06   --   Communication Channel Manipulation</summary>
   <h6> Targeted Element </h6>
   <p> Send user identity </p>
   <h6> Severity </h6>
@@ -1102,7 +1137,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   64  --  CR08   --   Client-Server Protocol Manipulation</summary>
+  <summary>   66  --  CR08   --   Client-Server Protocol Manipulation</summary>
   <h6> Targeted Element </h6>
   <p> Send user identity </p>
   <h6> Severity </h6>
@@ -1113,6 +1148,36 @@ Finding Count|5|
   <p>Use strong authentication protocols.</p>
   <h6>References</h6>
   <p>https://capec.mitre.org/data/definitions/220.html, http://cwe.mitre.org/data/definitions/757.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   67  --  DS06   --   Data Leak</summary>
+  <h6> Targeted Element </h6>
+  <p> Send user identity </p>
+  <h6> Severity </h6>
+  <p>Very High</p>
+  <h6>Example Instances</h6>
+  <p>An application, which connects to a database without TLS, performs a database query in which it compares the password to a stored hash, instead of fetching the hash and comparing it locally.</p>
+  <h6>Mitigations</h6>
+  <p>All data should be encrypted in transit. All PII and restricted data must be encrypted at rest. If a service is storing credentials used to authenticate users or incoming connections, it must only store hashes of them created using cryptographic functions, so it is only possible to compare them against user input, without fully decoding them. If a client is storing credentials in either files or other data store, access to them must be as restrictive as possible, including using proper file permissions, database users with restricted access or separate storage.</p>
+  <h6>References</h6>
+  <p>https://cwe.mitre.org/data/definitions/311.html, https://cwe.mitre.org/data/definitions/312.html, https://cwe.mitre.org/data/definitions/916.html, https://cwe.mitre.org/data/definitions/653.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   68  --  DR01   --   Unprotected Sensitive Data</summary>
+  <h6> Targeted Element </h6>
+  <p> Send user identity </p>
+  <h6> Severity </h6>
+  <p>High</p>
+  <h6>Example Instances</h6>
+  <p></p>
+  <h6>Mitigations</h6>
+  <p>All data should be encrypted in transit. All PII and restricted data must be encrypted at rest. If a service is storing credentials used to authenticate users or incoming connections, it must only store hashes of them created using cryptographic functions, so it is only possible to compare them against user input, without fully decoding them. If a client is storing credentials in either files or other data store, access to them must be as restrictive as possible, including using proper file permissions, database users with restricted access or separate storage.</p>
+  <h6>References</h6>
+  <p>https://cwe.mitre.org/data/definitions/311.html, https://cwe.mitre.org/data/definitions/312.html, https://cwe.mitre.org/data/definitions/916.html, https://cwe.mitre.org/data/definitions/653.html</p>
   &emsp;
 </details>
 
@@ -1125,7 +1190,7 @@ Sink|Server(IIS8.5 - ASP.NET Web Forms App)|
 Source|Server(IIS8.5 - ASP.NET Web Forms App)|
 Is Response|False|
 In Scope|True|
-Finding Count|5|
+Finding Count|7|
 
 
 
@@ -1133,7 +1198,7 @@ Finding Count|5|
 
 
 <details>
-  <summary>   65  --  DE01   --   Interception</summary>
+  <summary>   69  --  DE01   --   Interception</summary>
   <h6> Targeted Element </h6>
   <p> Keep session in memory </p>
   <h6> Severity </h6>
@@ -1148,7 +1213,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   66  --  AC05   --   Content Spoofing</summary>
+  <summary>   70  --  AC05   --   Content Spoofing</summary>
   <h6> Targeted Element </h6>
   <p> Keep session in memory </p>
   <h6> Severity </h6>
@@ -1163,7 +1228,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   67  --  DE03   --   Sniffing Attacks</summary>
+  <summary>   71  --  DE03   --   Sniffing Attacks</summary>
   <h6> Targeted Element </h6>
   <p> Keep session in memory </p>
   <h6> Severity </h6>
@@ -1178,7 +1243,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   68  --  CR06   --   Communication Channel Manipulation</summary>
+  <summary>   72  --  CR06   --   Communication Channel Manipulation</summary>
   <h6> Targeted Element </h6>
   <p> Keep session in memory </p>
   <h6> Severity </h6>
@@ -1193,7 +1258,7 @@ Finding Count|5|
 </details>
 
 <details>
-  <summary>   69  --  CR08   --   Client-Server Protocol Manipulation</summary>
+  <summary>   73  --  CR08   --   Client-Server Protocol Manipulation</summary>
   <h6> Targeted Element </h6>
   <p> Keep session in memory </p>
   <h6> Severity </h6>
@@ -1204,6 +1269,157 @@ Finding Count|5|
   <p>Use strong authentication protocols.</p>
   <h6>References</h6>
   <p>https://capec.mitre.org/data/definitions/220.html, http://cwe.mitre.org/data/definitions/757.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   74  --  DS06   --   Data Leak</summary>
+  <h6> Targeted Element </h6>
+  <p> Keep session in memory </p>
+  <h6> Severity </h6>
+  <p>Very High</p>
+  <h6>Example Instances</h6>
+  <p>An application, which connects to a database without TLS, performs a database query in which it compares the password to a stored hash, instead of fetching the hash and comparing it locally.</p>
+  <h6>Mitigations</h6>
+  <p>All data should be encrypted in transit. All PII and restricted data must be encrypted at rest. If a service is storing credentials used to authenticate users or incoming connections, it must only store hashes of them created using cryptographic functions, so it is only possible to compare them against user input, without fully decoding them. If a client is storing credentials in either files or other data store, access to them must be as restrictive as possible, including using proper file permissions, database users with restricted access or separate storage.</p>
+  <h6>References</h6>
+  <p>https://cwe.mitre.org/data/definitions/311.html, https://cwe.mitre.org/data/definitions/312.html, https://cwe.mitre.org/data/definitions/916.html, https://cwe.mitre.org/data/definitions/653.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   75  --  DR01   --   Unprotected Sensitive Data</summary>
+  <h6> Targeted Element </h6>
+  <p> Keep session in memory </p>
+  <h6> Severity </h6>
+  <p>High</p>
+  <h6>Example Instances</h6>
+  <p></p>
+  <h6>Mitigations</h6>
+  <p>All data should be encrypted in transit. All PII and restricted data must be encrypted at rest. If a service is storing credentials used to authenticate users or incoming connections, it must only store hashes of them created using cryptographic functions, so it is only possible to compare them against user input, without fully decoding them. If a client is storing credentials in either files or other data store, access to them must be as restrictive as possible, including using proper file permissions, database users with restricted access or separate storage.</p>
+  <h6>References</h6>
+  <p>https://cwe.mitre.org/data/definitions/311.html, https://cwe.mitre.org/data/definitions/312.html, https://cwe.mitre.org/data/definitions/916.html, https://cwe.mitre.org/data/definitions/653.html</p>
+  &emsp;
+</details>
+
+
+
+Name|Send Session ID
+|:----|:----|
+Description||
+Sink|Actor(User)|
+Source|Server(IIS8.5 - ASP.NET Web Forms App)|
+Is Response|False|
+In Scope|True|
+Finding Count|7|
+
+
+
+**Threats**
+
+
+<details>
+  <summary>   76  --  DE01   --   Interception</summary>
+  <h6> Targeted Element </h6>
+  <p> Send Session ID </p>
+  <h6> Severity </h6>
+  <p>Medium</p>
+  <h6>Example Instances</h6>
+  <p>Adversary tries to block, manipulate, and steal communications in an attempt to achieve a desired negative technical impact.</p>
+  <h6>Mitigations</h6>
+  <p>Leverage encryption to encode the transmission of data thus making it accessible only to authorized parties.</p>
+  <h6>References</h6>
+  <p>https://capec.mitre.org/data/definitions/117.html, http://cwe.mitre.org/data/definitions/319.html, https://cwe.mitre.org/data/definitions/299.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   77  --  AC05   --   Content Spoofing</summary>
+  <h6> Targeted Element </h6>
+  <p> Send Session ID </p>
+  <h6> Severity </h6>
+  <p>Medium</p>
+  <h6>Example Instances</h6>
+  <p>An attacker finds a site which is vulnerable to HTML Injection. He sends a URL with malicious code injected in the URL to the user of the website(victim) via email or some other social networking site. User visits the page because the page is located within trusted domain. When the victim accesses the page, the injected HTML code is rendered and presented to the user asking for username and password. The username and password are both sent to the attacker&#x27;s server.</p>
+  <h6>Mitigations</h6>
+  <p>Validation of user input for type, length, data-range, format, etc. Encoding any user input that will be output by the web application.</p>
+  <h6>References</h6>
+  <p>https://capec.mitre.org/data/definitions/148.html, http://cwe.mitre.org/data/definitions/345.html, https://cwe.mitre.org/data/definitions/299.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   78  --  DE03   --   Sniffing Attacks</summary>
+  <h6> Targeted Element </h6>
+  <p> Send Session ID </p>
+  <h6> Severity </h6>
+  <p>Medium</p>
+  <h6>Example Instances</h6>
+  <p>Attacker knows that the computer/OS/application can request new applications to install, or it periodically checks for an available update. The attacker loads the sniffer set up during Explore phase, and extracts the application code from subsequent communication. The attacker then proceeds to reverse engineer the captured code.</p>
+  <h6>Mitigations</h6>
+  <p>Encrypt sensitive information when transmitted on insecure mediums to prevent interception.</p>
+  <h6>References</h6>
+  <p>https://capec.mitre.org/data/definitions/157.html, http://cwe.mitre.org/data/definitions/311.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   79  --  CR06   --   Communication Channel Manipulation</summary>
+  <h6> Targeted Element </h6>
+  <p> Send Session ID </p>
+  <h6> Severity </h6>
+  <p>High</p>
+  <h6>Example Instances</h6>
+  <p>Using MITM techniques, an attacker launches a blockwise chosen-boundary attack to obtain plaintext HTTP headers by taking advantage of an SSL session using an encryption protocol in CBC mode with chained initialization vectors (IV). This allows the attacker to recover session IDs, authentication cookies, and possibly other valuable data that can be used for further exploitation. Additionally this could allow for the insertion of data into the stream, allowing for additional attacks (CSRF, SQL inject, etc) to occur.</p>
+  <h6>Mitigations</h6>
+  <p>Encrypt all sensitive communications using properly-configured cryptography.Design the communication system such that it associates proper authentication/authorization with each channel/message.</p>
+  <h6>References</h6>
+  <p>https://capec.mitre.org/data/definitions/216.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   80  --  CR08   --   Client-Server Protocol Manipulation</summary>
+  <h6> Targeted Element </h6>
+  <p> Send Session ID </p>
+  <h6> Severity </h6>
+  <p>Medium</p>
+  <h6>Example Instances</h6>
+  <p>An adversary could exploit existing communication protocol vulnerabilities and can launch MITM attacks and gain sensitive information or spoof client/server identities.</p>
+  <h6>Mitigations</h6>
+  <p>Use strong authentication protocols.</p>
+  <h6>References</h6>
+  <p>https://capec.mitre.org/data/definitions/220.html, http://cwe.mitre.org/data/definitions/757.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   81  --  DS06   --   Data Leak</summary>
+  <h6> Targeted Element </h6>
+  <p> Send Session ID </p>
+  <h6> Severity </h6>
+  <p>Very High</p>
+  <h6>Example Instances</h6>
+  <p>An application, which connects to a database without TLS, performs a database query in which it compares the password to a stored hash, instead of fetching the hash and comparing it locally.</p>
+  <h6>Mitigations</h6>
+  <p>All data should be encrypted in transit. All PII and restricted data must be encrypted at rest. If a service is storing credentials used to authenticate users or incoming connections, it must only store hashes of them created using cryptographic functions, so it is only possible to compare them against user input, without fully decoding them. If a client is storing credentials in either files or other data store, access to them must be as restrictive as possible, including using proper file permissions, database users with restricted access or separate storage.</p>
+  <h6>References</h6>
+  <p>https://cwe.mitre.org/data/definitions/311.html, https://cwe.mitre.org/data/definitions/312.html, https://cwe.mitre.org/data/definitions/916.html, https://cwe.mitre.org/data/definitions/653.html</p>
+  &emsp;
+</details>
+
+<details>
+  <summary>   82  --  DR01   --   Unprotected Sensitive Data</summary>
+  <h6> Targeted Element </h6>
+  <p> Send Session ID </p>
+  <h6> Severity </h6>
+  <p>High</p>
+  <h6>Example Instances</h6>
+  <p></p>
+  <h6>Mitigations</h6>
+  <p>All data should be encrypted in transit. All PII and restricted data must be encrypted at rest. If a service is storing credentials used to authenticate users or incoming connections, it must only store hashes of them created using cryptographic functions, so it is only possible to compare them against user input, without fully decoding them. If a client is storing credentials in either files or other data store, access to them must be as restrictive as possible, including using proper file permissions, database users with restricted access or separate storage.</p>
+  <h6>References</h6>
+  <p>https://cwe.mitre.org/data/definitions/311.html, https://cwe.mitre.org/data/definitions/312.html, https://cwe.mitre.org/data/definitions/916.html, https://cwe.mitre.org/data/definitions/653.html</p>
   &emsp;
 </details>
 
